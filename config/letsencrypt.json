@@ -1,0 +1,26 @@
+{
+ "name" : "letsencrypt",
+ "countryName" : "DE",
+ "stateName" : "BW",
+ "localityName" : "Konstanz",
+ "organizationName" : "tillniese.com",
+ "emailAddress" : "acme+letsencrypt@tn-dev.com",
+ "domain" : "tillniese.com",
+ "domains": [
+    "tillniese.com",
+    "www.tillniese.com",
+    "admin.tillniese.com",
+    "mail.tillniese.com",
+    "cloud.tillniese.com",
+    "autoconfig.tillniese.com",
+    "mx1.tillniese.com",
+    "tn-dev.com",
+    "www.tn-dev.com",
+    "mail.tn-dev.com",
+    "admin.tn-dev.com",
+    "autoconfig.tn-dev.com",
+    "ppma.tn-dev.com",
+    "git.tillniese.com",
+    "awert.tillniese.com"
+ ]
+}
