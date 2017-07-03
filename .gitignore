@@ -5,3 +5,4 @@ acme-tiny
 certs
 node_modules
 tmp
+config.json

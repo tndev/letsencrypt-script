@@ -2,29 +2,31 @@
 const Promise = require('bluebird')
 const fs = Promise.promisifyAll(require('fs'))
 const path = require('path')
+const crypto = require('crypto')
 
-const reloadService = require('./lib/services').reload
 const callOpenSSL = require('./lib/openssl').createCsr
 const callTinyAcme = require('./lib/acme').requestCrt
 const get = require('./lib/http').get
 
 function createCertForDomains (info, options) {
+  const sha1 = crypto.createHash('sha1')
+
   var acmeChallengePath = options.acmeChallengePath
   var sslPath = options.sslPath
-
-  var acmeAccountKey = options.acmeKey
   var sslKey = options.sslKey
 
   var certName = info.name
-  var testContent = 'ads2134435123123'
+  var testContent = sha1.update(Date.now()).digest('hex')
   var domainList = []
+  var reachableTestFile = acmeChallengePath + '/test.txt'
 
-  return fs.writeFileAsync(acmeChallengePath + '/test.txt', testContent)
+  return fs.writeFileAsync(reachableTestFile, testContent)
   .then(() => {
     return Promise.all(info.domains)
   })
+  // test if well-know is configured correctly for domains
   .each(domain => {
-    console.log('Check domain: ' + domain)
+    console.log('pre check: ' + domain)
     return get('http://' + domain + '/.well-known/acme-challenge/test.txt')
     .then(info => {
       if (info !== testContent) {
@@ -33,9 +35,11 @@ function createCertForDomains (info, options) {
       domainList.push(domain)
     })
     .catch(err => {
-      console.error('domain not valid: ' + domain + ' ' + err)
+      console.error('well-known valid: ' + domain + ' ' + err)
     })
   })
+  .then(() => fs.unlinkAsync(reachableTestFile))
+  // creat openssl config
   .then(() => fs.readFileAsync('./openssl.conf'))
   .then(conf => {
     conf = conf.toString()
@@ -52,6 +56,7 @@ function createCertForDomains (info, options) {
 
     return fs.writeFileAsync(path.join(__dirname, 'tmp/' + certName + '.cnf'), conf.toString())
   })
+  // create csr from config
   .then(() => {
     return callOpenSSL(info, {
       sslKey: sslKey,
@@ -59,10 +64,11 @@ function createCertForDomains (info, options) {
       sslCsr: path.join(__dirname, 'tmp/' + certName + '.csr')
     })
   })
+  // create pem and get curren cross signed pem for stacking
   .then(() => {
     return Promise.all([
       callTinyAcme({
-        accountKey: acmeAccountKey,
+        accountKey: options.acmeKey,
         sslCsr: path.join(__dirname, 'tmp/' + certName + '.csr'),
         acmeChallengePath: acmeChallengePath
       }),
@@ -70,13 +76,16 @@ function createCertForDomains (info, options) {
     ])
   })
   .then(pems => {
-    return fs.renameAsync(path.join(sslPath, certName + '.pem'), path.join(sslPath, certName + '-' + Date.now() + '.pem')).catch(function (e) {})
+    // save old pem
+    return fs.renameAsync(path.join(sslPath, certName + '.pem'), path.join(sslPath, certName + '-' + Date.now() + '.pem'))
+    .catch(function (e) {})
     .then(() => {
+      // write new pem
       return fs.writeFileAsync(path.join(sslPath, certName + '.pem'), pems.join(''))
     })
+    // TODO validate pem
   })
-  .then(() => fs.unlinkAsync(acmeChallengePath + '/test.txt'))
 }
 
-module.exports.createCertForDomains = createCertForDomains;
-module.exports.services = require('./lib/services');
+module.exports.createCertForDomains = createCertForDomains
+module.exports.services = require('./lib/services')

@@ -1,5 +1,5 @@
 const createCertForDomains = require('./main').createCertForDomains;
-const reloadService = require('./main').services.reloadService;
+const reloadService = require('./main').services.reload;
 
 createCertForDomains(require('./certs/letsencrypt.json'), require('./config.json'))
 .then(() => Promise.all([
