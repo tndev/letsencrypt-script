@@ -78,18 +78,5 @@ function createCertForDomains (info, options) {
   .then(() => fs.unlinkAsync(acmeChallengePath + '/test.txt'))
 }
 
-createCertForDomains(require('./certs/letsencrypt.json'), require('./config.json'))
-.then(() => Promise.all([
-  reloadService('nginx'),
-  reloadService('postfix'),
-  reloadService('dovecot')
-]))
-.then(() => {
-  console.log('finished')
-})
-.catch(err => {
-  console.log('failed')
-  console.dir(err)
-})
-
-// :console.dir(info);
+module.exports.createCertForDomains = createCertForDomains;
+module.exports.services = require('./lib/services');

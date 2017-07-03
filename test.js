@@ -1,9 +1,16 @@
+const createCertForDomains = require('./main').createCertForDomains;
+const reloadService = require('./main').services.reloadService;
 
-
-require('./lib/services').reload('nginx')
-.then(()=> {
-  console.log('reloaded')
+createCertForDomains(require('./certs/letsencrypt.json'), require('./config.json'))
+.then(() => Promise.all([
+  reloadService('nginx'),
+  reloadService('postfix'),
+  reloadService('dovecot')
+]))
+.then(() => {
+  console.log('finished')
 })
 .catch(err => {
-  console.dir(err);
+  console.log('failed')
+  console.dir(err)
 })
