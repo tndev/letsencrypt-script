@@ -14,9 +14,12 @@ function createCertForDomains (info, options) {
   var sslKey = options.sslKey
 
   var certName = info.name
-  var domainList = []
+  var domainList
 
   return testWellKnownReachability(info.domains, acmeChallengePath)
+  .then( info => {
+    domainList = info.valid
+  })
   // creat openssl config
   .then(() => fs.readFileAsync('./openssl.conf'))
   .then(conf => {
