@@ -2,43 +2,21 @@
 const Promise = require('bluebird')
 const fs = Promise.promisifyAll(require('fs'))
 const path = require('path')
-const crypto = require('crypto')
 
 const callOpenSSL = require('./lib/openssl').createCsr
 const callTinyAcme = require('./lib/acme').requestCrt
+const testWellKnownReachability = require('./lib/utils').testWellKnownReachability
 const get = require('./lib/http').get
 
 function createCertForDomains (info, options) {
-  const sha1 = crypto.createHash('sha1')
-
   var acmeChallengePath = options.acmeChallengePath
   var sslPath = options.sslPath
   var sslKey = options.sslKey
 
   var certName = info.name
-  var testContent = sha1.update(Date.now()).digest('hex')
   var domainList = []
-  var reachableTestFile = acmeChallengePath + '/test.txt'
 
-  return fs.writeFileAsync(reachableTestFile, testContent)
-  .then(() => {
-    return Promise.all(info.domains)
-  })
-  // test if well-know is configured correctly for domains
-  .each(domain => {
-    console.log('pre check: ' + domain)
-    return get('http://' + domain + '/.well-known/acme-challenge/test.txt')
-    .then(info => {
-      if (info !== testContent) {
-        throw new Error('wrong content of test file')
-      }
-      domainList.push(domain)
-    })
-    .catch(err => {
-      console.error('well-known valid: ' + domain + ' ' + err)
-    })
-  })
-  .then(() => fs.unlinkAsync(reachableTestFile))
+  return testWellKnownReachability(info.domains, acmeChallengePath)
   // creat openssl config
   .then(() => fs.readFileAsync('./openssl.conf'))
   .then(conf => {
