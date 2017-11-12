@@ -1,0 +1,27 @@
+{
+  "name": "letsencrypt-script",
+  "version": "0.0.1",
+  "description": "Unitility script for letsencrpyt",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "pem": "^1.12.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tndev/letsencrypt-script.git"
+  },
+  "author": "Till Niese",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tndev/letsencrypt-script/issues"
+  },
+  "homepage": "https://github.com/tndev/letsencrypt-script#readme"
+}
