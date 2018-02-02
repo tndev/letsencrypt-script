@@ -10,7 +10,6 @@ const get = require('./lib/http').get
 
 function createCertForDomains (buildInfo, options) {
   var acmeChallengePath = options.acmeChallengePath
-  var sslPath = options.sslPath
   var sslKey = options.sslKey
 
   var certName = buildInfo.name
@@ -58,11 +57,11 @@ function createCertForDomains (buildInfo, options) {
   })
   .then(pems => {
     // save old pem
-    return fs.renameAsync(path.join(sslPath, certName + '.pem'), path.join(sslPath, certName + '-' + Date.now() + '.pem'))
+    return fs.renameAsync(buildInfo.certFile, buildInfo.certFile + '-' + Date.now())
     .catch(function (e) {})
     .then(() => {
       // write new pem
-      return fs.writeFileAsync(path.join(sslPath, certName + '.pem'), pems.join(''))
+      return fs.writeFileAsync(buildInfo.certFile, pems.join(''))
     })
     // TODO validate pem
   })
