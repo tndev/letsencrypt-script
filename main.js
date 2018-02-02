@@ -34,14 +34,14 @@ function createCertForDomains (buildInfo, options) {
 
     conf = conf.replace('{{alt_names}}', altNames.join('\n'))
 
-    return fs.writeFileAsync(path.join(__dirname, 'tmp/' + certName + '.cnf'), conf.toString())
+    return fs.writeFileAsync(path.join(options.tmpPath, certName + '.cnf'), conf.toString())
   })
   // create csr from config
   .then(() => {
     return callOpenSSL(buildInfo.info, {
       sslKey: sslKey,
-      sslConfig: path.join(__dirname, 'tmp/' + certName + '.cnf'),
-      sslCsr: path.join(__dirname, 'tmp/' + certName + '.csr')
+      sslConfig: path.join(options.tmpPath, certName + '.cnf'),
+      sslCsr: path.join(options.tmpPath, certName + '.csr')
     })
   })
   // create pem and get curren cross signed pem for stacking
@@ -49,7 +49,7 @@ function createCertForDomains (buildInfo, options) {
     return Promise.all([
       callTinyAcme({
         accountKey: options.acmeKey,
-        sslCsr: path.join(__dirname, 'tmp/' + certName + '.csr'),
+        sslCsr: path.join(options.tmpPath, certName + '.csr'),
         acmeChallengePath: acmeChallengePath
       }),
       get('https://letsencrypt.org/certs/lets-encrypt-x3-cross-signed.pem')
