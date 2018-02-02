@@ -51,6 +51,7 @@ async function createCertForDomains (buildInfo, options) {
   // create pem and get curren cross signed pem for stacking
   var pems = await Promise.all([
     callTinyAcme({
+      path: options.tmpPath,
       accountKey: options.acmeKey,
       sslCsr: path.join(options.tmpPath, certName + '.csr'),
       acmeChallengePath: acmeChallengePath
