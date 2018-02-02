@@ -17,7 +17,7 @@ function createCertForDomains (buildInfo, options) {
   var domainList
 
   return testWellKnownReachability(buildInfo.info.domains, acmeChallengePath)
-  .then( info => {
+  .then(info => {
     domainList = info.valid
   })
   // creat openssl config
