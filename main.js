@@ -8,15 +8,15 @@ const callTinyAcme = require('./lib/acme').requestCrt
 const testWellKnownReachability = require('./lib/utils').testWellKnownReachability
 const get = require('./lib/http').get
 
-function createCertForDomains (info, options) {
+function createCertForDomains (buildInfo, options) {
   var acmeChallengePath = options.acmeChallengePath
   var sslPath = options.sslPath
   var sslKey = options.sslKey
 
-  var certName = info.name
+  var certName = buildInfo.name
   var domainList
 
-  return testWellKnownReachability(info.domains, acmeChallengePath)
+  return testWellKnownReachability(buildInfo.info.domains, acmeChallengePath)
   .then( info => {
     domainList = info.valid
   })
@@ -24,11 +24,11 @@ function createCertForDomains (info, options) {
   .then(() => fs.readFileAsync('./openssl.conf'))
   .then(conf => {
     conf = conf.toString()
-    conf = conf.replace('{{countryName}}', info.countryName)
-    conf = conf.replace('{{stateName}}', info.stateName)
-    conf = conf.replace('{{localityName}}', info.localityName)
-    conf = conf.replace('{{organizationName}}', info.organizationName)
-    conf = conf.replace('{{emailAddress}}', info.emailAddress)
+    conf = conf.replace('{{countryName}}', buildInfo.info.countryName)
+    conf = conf.replace('{{stateName}}', buildInfo.info.stateName)
+    conf = conf.replace('{{localityName}}', buildInfo.info.localityName)
+    conf = conf.replace('{{organizationName}}', buildInfo.info.organizationName)
+    conf = conf.replace('{{emailAddress}}', buildInfo.info.emailAddress)
     conf = conf.replace('{{commonName}}', domainList[0])
 
     let altNames = domainList.map((domain, index) => 'DNS.' + (index + 1) + ' = ' + domain)
@@ -39,7 +39,7 @@ function createCertForDomains (info, options) {
   })
   // create csr from config
   .then(() => {
-    return callOpenSSL(info, {
+    return callOpenSSL(buildInfo.info, {
       sslKey: sslKey,
       sslConfig: path.join(__dirname, 'tmp/' + certName + '.cnf'),
       sslCsr: path.join(__dirname, 'tmp/' + certName + '.csr')
